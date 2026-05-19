@@ -136,7 +136,7 @@ export default function KontakPage() {
                   </div>
                   <div className="flex-grow w-full relative min-h-[400px]">
                     <iframe
-                      src="https://www.google.com/maps/place/Badan+Pusat+Statistik+Flores+Timur/@-8.3192847,123.0111258,17z/data=!3m1!4b1!4m6!3m5!1s0x2dac7e22dda82a1f:0x2f427bb45d03ef50!8m2!3d-8.31929!4d123.0137061!16s%2Fg%2F11c60cfn60?entry=ttu&g_ep=EgoyMDI2MDUxMy4wIKXMDSoASAFQAw%3D%3D"
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3945.718306061329!2d122.98188161478335!3d-8.332405693991206!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2cad051515151515%3A0x1515151515151515!2sLarantuka!5e0!3m2!1sen!2sid!4v1620000000000!5m2!1sen!2sid"
                       width="100%"
                       height="100%"
                       style={{ border: 0, position: "absolute", top: 0, left: 0 }}
