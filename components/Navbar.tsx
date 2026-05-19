@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Button, buttonVariants } from "./ui/Button";
+import Image from "next/image";
 
 const navLinks = [
   { name: "Beranda", href: "/" },
@@ -26,12 +27,15 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md">
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2 group">
-              {/* TODO: ganti dengan <Image> logo BPS */}
-              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[var(--primary)] text-white font-bold group-hover:bg-[var(--secondary)] transition-colors">
-                BPS
-              </div>
+              <Image 
+              src="/logo_bps.png"
+              alt="Logo BPS"
+              width={100}
+              height={100}
+              loading="lazy"
+              />
               <div className="hidden sm:flex flex-col leading-tight">
                 <span className="font-heading font-bold text-[var(--primary)] text-lg">PST BPS</span>
                 <span className="text-xs text-gray-500">Kabupaten Flores Timur</span>

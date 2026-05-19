@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Mail, MapPin, Phone, MessageSquare, Globe, Camera, Video } from "lucide-react";
+import { Mail, MapPin, Phone, ScanFace, Globe, Camera, Video } from "lucide-react";
+import Image from "next/image";
 
 export default function Footer() {
   return (
@@ -10,9 +11,13 @@ export default function Footer() {
           <div className="space-y-4">
             <div className="flex items-center gap-3 mb-6">
               {/* TODO: ganti dengan <Image> logo BPS putih */}
-              <div className="flex h-12 w-12 items-center justify-center rounded-md bg-white text-[var(--primary)] font-bold text-lg">
-                BPS
-              </div>
+              <Image 
+              src="/logo_bps.png"
+              alt="Logo BPS"
+              width={70}
+              height={70}
+              className="rounded-md"
+              />
               <div className="flex flex-col">
                 <span className="font-heading font-bold text-white text-lg">Badan Pusat Statistik</span>
                 <span className="text-sm text-slate-400">Kabupaten Flores Timur</span>
@@ -57,7 +62,7 @@ export default function Footer() {
                 <MapPin className="h-5 w-5 text-[var(--accent)] shrink-0 mt-0.5" />
                 <span className="text-sm">
                   {/* TODO: Ganti alamat real */}
-                  Jl. Diponegoro No.1, Larantuka<br />
+                  Jl. San Juan, Sarotari Tengah, Larantuka<br />
                   Kabupaten Flores Timur<br />
                   Nusa Tenggara Timur, 86219
                 </span>
@@ -66,7 +71,7 @@ export default function Footer() {
                 <Phone className="h-5 w-5 text-[var(--accent)] shrink-0" />
                 <span className="text-sm">
                   {/* TODO: Ganti no HP real */}
-                  (0383) 21123
+                  (0383) 21164
                 </span>
               </li>
               <li className="flex items-center gap-3">
@@ -83,19 +88,19 @@ export default function Footer() {
             </h3>
             <p className="text-sm mb-4">Ikuti kami untuk mendapatkan informasi statistik terbaru.</p>
             <div className="flex gap-4">
-              <a href="#" className="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-[var(--secondary)] hover:text-white transition-all text-slate-300">
-                <MessageSquare className="h-5 w-5" />
+              <a href="https://www.facebook.com/profile.php?id=100063912365763" className="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-[var(--secondary)] hover:text-white transition-all text-slate-300">
+                <ScanFace className="h-5 w-5" />
                 <span className="sr-only">Facebook</span>
               </a>
-              <a href="#" className="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-[var(--secondary)] hover:text-white transition-all text-slate-300">
+              <a href="https://florestimurkab.bps.go.id" className="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-[var(--secondary)] hover:text-white transition-all text-slate-300">
                 <Globe className="h-5 w-5" />
-                <span className="sr-only">Twitter</span>
+                <span className="sr-only">Web</span>
               </a>
-              <a href="#" className="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-pink-600 hover:text-white transition-all text-slate-300">
+              <a href="https://www.instagram.com/bpsflorestimur/" className="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-pink-600 hover:text-white transition-all text-slate-300">
                 <Camera className="h-5 w-5" />
                 <span className="sr-only">Instagram</span>
               </a>
-              <a href="#" className="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-red-600 hover:text-white transition-all text-slate-300">
+              <a href="https://www.youtube.com/@badanpusatstatistikkabupat6369" className="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-red-600 hover:text-white transition-all text-slate-300">
                 <Video className="h-5 w-5" />
                 <span className="sr-only">YouTube</span>
               </a>

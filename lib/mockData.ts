@@ -1,28 +1,28 @@
 import { BarChart3, BookOpen, Map, MessageSquare, Users, FileText } from "lucide-react";
 
 export const statsData = [
-  { id: 1, label: "Total Pengunjung", value: "1,204", icon: Users },
+  { id: 1, label: "24 JAM", value: "Tersedia dalam", icon: Users },
   { id: 2, label: "Layanan Tersedia", value: "6", icon: BookOpen },
   { id: 3, label: "Tahun Beroperasi", value: "15+", icon: BarChart3 },
 ];
 
 export const servicesData = [
   {
-    id: "konsultasi-data",
-    title: "Konsultasi Data Statistik",
+    id: "konsultasi-statistik",
+    title: "Pelayanan Konsultasi Statistik",
     description: "Layanan konsultasi terkait data, metadata, klasifikasi, dan produk statistik lainnya.",
     icon: MessageSquare,
   },
   {
-    id: "permintaan-data",
-    title: "Permintaan Data Mikro",
-    description: "Melayani permintaan data mikro untuk penelitian, tugas akhir, atau keperluan instansi.",
+    id: "pelayanan-perpustakaan",
+    title: "Pelayanan Perpustakaan",
+    description: "Menyediakan akses ke berbagai publikasi resmi, data statistik terpadu, dan referensi terpercaya yang mencakup koleksi tercetak, pustaka digital, katalog publik.",
     icon: FileText,
   },
   {
-    id: "rekomendasi",
-    title: "Rekomendasi Statistik",
-    description: "Saran dan rekomendasi kegiatan sektoral yang diberikan oleh BPS terhadap kegiatan statistik.",
+    id: "rekomendasi-kegiatan",
+    title: "Pelayanan Rekomendasi Kegiatan Statistik",
+    description: "Fasilitas yang diberikan kepada Kementerian, Lembaga, atau Instansi Pemerintah untuk mengevaluasi rancangan survei sektoral agar sesuai dengan prinsip dan standar nasional.",
     icon: BookOpen,
   },
   {

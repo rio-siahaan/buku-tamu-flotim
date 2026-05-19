@@ -1,144 +1,101 @@
-"use client";
+import { createAdminClient } from "@/lib/supabase/server";
+import DashboardClient from "./DashboardClient";
 
-import { motion } from "framer-motion";
-import { Download, Users, UserCheck, Calendar, Activity, Clock } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { mockDashboardStats, mockEducationData, mockServiceDistributionData, mockRecentVisitors } from "@/lib/mockData";
-import { BarChart } from "@/components/charts/BarChart";
-import { PieChart } from "@/components/charts/PieChart";
+export default async function DashboardPage() {
+  // Kita gunakan Admin Client untuk mem-bypass RLS (sehingga pengunjung publik bisa melihat grafik/dashboard)
+  // tanpa harus login terlebih dahulu.
+  const supabase = createAdminClient();
 
-export default function DashboardPage() {
-  const statCards = [
-    { title: "Total Pengunjung", value: mockDashboardStats.total, icon: Users, color: "text-blue-600", bg: "bg-blue-100" },
-    { title: "Pengunjung Hari Ini", value: mockDashboardStats.today, icon: UserCheck, color: "text-emerald-600", bg: "bg-emerald-100" },
-    { title: "Bulan Ini", value: mockDashboardStats.thisMonth, icon: Calendar, color: "text-amber-600", bg: "bg-amber-100" },
-    { title: "Rata-rata / Hari", value: mockDashboardStats.avgPerDay, icon: Activity, color: "text-purple-600", bg: "bg-purple-100" },
-  ];
+
+  // 1. Total pengunjung
+  const { count: totalCount } = await supabase
+    .from("visitors")
+    .select("*", { count: "exact", head: true });
+
+  // 2. Pengunjung hari ini
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const { count: todayCount } = await supabase
+    .from("visitors")
+    .select("*", { count: "exact", head: true })
+    .gte("visited_at", today.toISOString());
+
+  // 3. Pengunjung bulan ini
+  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const { count: thisMonthCount } = await supabase
+    .from("visitors")
+    .select("*", { count: "exact", head: true })
+    .gte("visited_at", firstDayOfMonth.toISOString());
+
+  // 4. Pengunjung minggu ini (7 hari terakhir)
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(today.getDate() - 7);
+  const { count: thisWeekCount } = await supabase
+    .from("visitors")
+    .select("*", { count: "exact", head: true })
+    .gte("visited_at", sevenDaysAgo.toISOString());
+
+  // 5 & 6. Fetch data chart
+  // Untuk data agregasi (group by) tanpa custom RPC, kita ambil data education & occupation
+  // Untuk optimalisasi, kita bisa fetch semua jika masih sedikit, tapi lebih baik gunakan limit
+  const { data: chartData } = await supabase
+    .from("visitors")
+    .select("education, occupation");
+
+  const educationMap = new Map<string, number>();
+  const occupationMap = new Map<string, number>();
+
+  chartData?.forEach((v) => {
+    educationMap.set(v.education, (educationMap.get(v.education) || 0) + 1);
+    occupationMap.set(v.occupation, (occupationMap.get(v.occupation) || 0) + 1);
+  });
+
+  const educationData = Array.from(educationMap, ([name, value]) => ({ name, value }));
+  const occupationData = Array.from(occupationMap, ([name, value]) => ({ name, value }));
+
+  // 7. Tabel pengunjung terbaru hari ini
+  const { data: recentVisitorsData } = await supabase
+    .from("visitors")
+    .select("id, full_name, institution, visited_at, purpose")
+    .gte("visited_at", today.toISOString())
+    .order("visited_at", { ascending: false })
+    .limit(10);
+
+  const recentVisitors = (recentVisitorsData || []).map((v) => {
+    // Format timestamp menjadi lokal jam & tanggal
+    const date = new Date(v.visited_at);
+    const dateStr = date.toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    });
+    const timeStr = date.toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+    return {
+      id: v.id,
+      name: v.full_name,
+      institution: v.institution,
+      time: `${dateStr}, ${timeStr} WITA`,
+      purpose: v.purpose
+    };
+  });
+
+  const stats = {
+    total: totalCount || 0,
+    today: todayCount || 0,
+    thisMonth: thisMonthCount || 0,
+    thisWeek: thisWeekCount || 0,
+  };
 
   return (
-    <div className="min-h-screen bg-[var(--surface)]/50 pb-12">
-      {/* Header Dashboard */}
-      <div className="bg-white border-b border-gray-200 py-6 mb-8">
-        <div className="container mx-auto px-4 md:px-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-heading font-bold text-slate-800">Dashboard Pengunjung PST</h1>
-            <p className="text-sm text-slate-500">Ringkasan statistik pelayanan terpadu BPS Flores Timur</p>
-          </div>
-          <Button variant="outline" className="gap-2">
-            <Download className="w-4 h-4" /> Export Data
-          </Button>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 md:px-6 space-y-8 max-w-7xl">
-        
-        {/* ROW 1: Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {statCards.map((stat, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
-                <CardContent className="p-6 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-slate-500 mb-1">{stat.title}</p>
-                    <h3 className="text-3xl font-heading font-bold text-slate-800">{stat.value.toLocaleString('id-ID')}</h3>
-                  </div>
-                  <div className={`w-12 h-12 rounded-full ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
-                    <stat.icon className="w-6 h-6" />
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* ROW 2: Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Card className="h-full border-none shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg">Distribusi Pendidikan Pengunjung</CardTitle>
-              </CardHeader>
-              <CardContent className="h-[300px] min-h-0">
-                <BarChart data={mockEducationData} />
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <Card className="h-full border-none shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg">Distribusi Jenis Layanan</CardTitle>
-              </CardHeader>
-              <CardContent className="h-[300px] min-h-0">
-                <PieChart data={mockServiceDistributionData} />
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-
-        {/* ROW 3: Table Recent Visitors */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          <Card className="border-none shadow-sm overflow-hidden">
-            <CardHeader className="border-b border-gray-100 bg-white">
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-lg">Pengunjung Terbaru Hari Ini</CardTitle>
-                <Button variant="ghost" size="sm" className="text-[var(--primary)]">Lihat Semua</Button>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                  <thead className="text-xs text-slate-500 bg-slate-50 uppercase">
-                    <tr>
-                      <th className="px-6 py-4 font-medium">No</th>
-                      <th className="px-6 py-4 font-medium">Nama Lengkap</th>
-                      <th className="px-6 py-4 font-medium">Layanan</th>
-                      <th className="px-6 py-4 font-medium">Waktu</th>
-                      <th className="px-6 py-4 font-medium text-right">Detail</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {mockRecentVisitors.map((visitor, index) => (
-                      <tr key={visitor.id} className="bg-white hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4 font-medium text-slate-900">{index + 1}</td>
-                        <td className="px-6 py-4 font-semibold text-slate-800">{visitor.name}</td>
-                        <td className="px-6 py-4 text-slate-600">{visitor.service}</td>
-                        <td className="px-6 py-4 text-slate-500">
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4" /> {visitor.time}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          {visitor.data}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-      </div>
-    </div>
+    <DashboardClient
+      stats={stats}
+      educationData={educationData}
+      occupationData={occupationData}
+      recentVisitors={recentVisitors}
+    />
   );
 }

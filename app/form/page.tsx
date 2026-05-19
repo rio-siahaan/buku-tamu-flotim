@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronRight, ChevronLeft, User, Building, ClipboardList, PartyPopper } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft, User, Building, ClipboardList, PartyPopper, Loader2, AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { guestBookSchema, type GuestBookFormValues } from "@/lib/validations";
@@ -18,8 +18,10 @@ const steps = [
 
 export default function FormPage() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitState, setSubmitState] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [queueNumber, setQueueNumber] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isPending, startTransition] = useTransition();
 
   const {
     register,
@@ -38,7 +40,7 @@ export default function FormPage() {
     if (currentStep === 1) {
       isStepValid = await trigger(["fullName", "phone", "email", "gender", "birthDate"]);
     } else if (currentStep === 2) {
-      isStepValid = await trigger(["institution", "education", "occupation", "serviceType", "purpose"]);
+      isStepValid = await trigger(["institution", "education", "occupation", "purpose"]);
     }
 
     if (isStepValid) {
@@ -52,19 +54,60 @@ export default function FormPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const onSubmit = (data: GuestBookFormValues) => {
-    // Simulasi pengiriman data
-    console.log(data);
-    
-    // Generate nomor antrian acak
-    const randomQueue = `A-${Math.floor(Math.random() * 100).toString().padStart(3, '0')}`;
-    setQueueNumber(randomQueue);
-    
-    setIsSubmitted(true);
+  const onSubmit = async (data: GuestBookFormValues) => {
+    // Optimistic: show loading immediately
+    setSubmitState("loading");
+    setErrorMessage("");
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    try {
+      const res = await fetch("/api/visitors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.error || "Gagal mengirim data.");
+      }
+
+      // Success — show queue number from server
+      startTransition(() => {
+        setQueueNumber(result.queueNumber);
+        setSubmitState("success");
+      });
+    } catch (err) {
+      // Rollback — show error and let user retry
+      setSubmitState("error");
+      setErrorMessage(err instanceof Error ? err.message : "Terjadi kesalahan. Silakan coba lagi.");
+    }
   };
 
-  if (isSubmitted) {
+  // Loading state
+  if (submitState === "loading") {
+    return (
+      <div className="min-h-screen bg-[var(--surface)] flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center"
+        >
+          <div className="w-20 h-20 mx-auto mb-6 relative">
+            <div className="absolute inset-0 rounded-full border-4 border-[var(--primary)]/20" />
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[var(--primary)] animate-spin" />
+            <div className="absolute inset-3 rounded-full border-4 border-transparent border-t-[var(--accent)] animate-spin" style={{ animationDirection: "reverse", animationDuration: "0.8s" }} />
+          </div>
+          <h2 className="text-xl font-heading font-bold text-[var(--primary)] mb-2">Mengirim Data...</h2>
+          <p className="text-slate-500 text-sm">Mohon tunggu, data Anda sedang diproses</p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Success state
+  if (submitState === "success") {
     return (
       <div className="min-h-screen bg-[var(--surface)] flex items-center justify-center p-4">
         <motion.div 
@@ -74,7 +117,7 @@ export default function FormPage() {
         >
           <Card className="border-none shadow-2xl text-center overflow-hidden">
             <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] h-32 flex items-center justify-center relative">
-              {/* Confetti effect (simulated with absolute elements) */}
+              {/* Confetti effect */}
               <div className="absolute inset-0 overflow-hidden">
                 {[...Array(20)].map((_, i) => (
                   <motion.div
@@ -100,10 +143,10 @@ export default function FormPage() {
               <h2 className="text-3xl font-heading font-bold text-[var(--primary)] mb-2">Terima Kasih!</h2>
               <p className="text-slate-600 mb-8">Data Anda telah berhasil direkam dalam sistem Buku Tamu PST.</p>
               
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 mb-8">
+              {/* <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 mb-8">
                 <p className="text-sm text-slate-500 font-medium mb-1">Nomor Antrian Anda</p>
                 <p className="text-5xl font-heading font-bold text-[var(--primary)] tracking-wider">{queueNumber}</p>
-              </div>
+              </div> */}
               
               <Button onClick={() => window.location.reload()} className="w-full h-12 text-base rounded-full">
                 Isi Form Baru
@@ -123,6 +166,21 @@ export default function FormPage() {
           <h1 className="text-3xl md:text-4xl font-heading font-bold text-[var(--primary)] mb-4">Buku Tamu Digital</h1>
           <p className="text-slate-600">Silakan lengkapi data kunjungan Anda di bawah ini.</p>
         </div>
+
+        {/* Error banner */}
+        {submitState === "error" && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl text-sm"
+          >
+            <AlertCircle className="w-5 h-5 shrink-0" />
+            <div>
+              <p className="font-semibold">Gagal mengirim data</p>
+              <p className="text-red-600">{errorMessage}</p>
+            </div>
+          </motion.div>
+        )}
 
         {/* Progress Bar */}
         <div className="mb-10 relative">
@@ -296,7 +354,7 @@ export default function FormPage() {
                           </div>
                         </div>
 
-                        <div>
+                        {/* <div>
                           <label className="block text-sm font-medium text-slate-700 mb-1">Jenis Layanan yang Dicari <span className="text-red-500">*</span></label>
                           <select 
                             {...register("serviceType")}
@@ -308,7 +366,7 @@ export default function FormPage() {
                             ))}
                           </select>
                           {errors.serviceType && <p className="text-red-500 text-xs mt-1">{errors.serviceType.message}</p>}
-                        </div>
+                        </div> */}
 
                         <div>
                           <label className="block text-sm font-medium text-slate-700 mb-1">Keperluan Kunjungan <span className="text-red-500">*</span></label>
@@ -365,17 +423,13 @@ export default function FormPage() {
                                 <dt className="text-sm text-slate-500">Pekerjaan</dt>
                                 <dd className="font-medium text-slate-900">{getValues("occupation")}</dd>
                               </div>
-                              <div>
-                                <dt className="text-sm text-slate-500">Layanan</dt>
-                                <dd className="font-medium text-[var(--primary)]">{getValues("serviceType")}</dd>
-                              </div>
                             </dl>
                           </div>
                         </div>
                         
                         <div className="pt-4 border-t border-slate-200">
                           <dt className="text-sm text-slate-500 mb-1">Keperluan Kunjungan</dt>
-                          <dd className="font-medium text-slate-900 italic">"{getValues("purpose")}"</dd>
+                          <dd className="font-medium text-slate-900 italic">&quot;{getValues("purpose")}&quot;</dd>
                         </div>
                       </div>
 

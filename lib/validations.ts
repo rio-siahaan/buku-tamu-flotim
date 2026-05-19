@@ -10,7 +10,6 @@ export const guestBookSchema = z.object({
   institution: z.string().min(2, { message: "Instansi/Asal wajib diisi" }),
   education: z.string().min(1, { message: "Pilih pendidikan terakhir" }),
   occupation: z.string().min(1, { message: "Pilih pekerjaan" }),
-  serviceType: z.string().min(1, { message: "Pilih jenis layanan" }),
   purpose: z.string().min(10, { message: "Keperluan minimal 10 karakter" }),
 });
 
