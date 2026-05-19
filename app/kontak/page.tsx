@@ -65,7 +65,7 @@ export default function KontakPage() {
                         Nusa Tenggara Timur, 86219
                       </p>
                       <a
-                        href="https://maps.google.com"
+                        href="https://www.google.com/maps/place/Badan+Pusat+Statistik+Flores+Timur/@-8.3192847,123.0111258,17z/data=!3m1!4b1!4m6!3m5!1s0x2dac7e22dda82a1f:0x2f427bb45d03ef50!8m2!3d-8.31929!4d123.0137061!16s%2Fg%2F11c60cfn60?entry=ttu&g_ep=EgoyMDI2MDUxMy4wIKXMDSoASAFQAw%3D%3D"
                         target="_blank"
                         rel="noreferrer"
                       >
@@ -115,7 +115,7 @@ export default function KontakPage() {
                         Jam Operasional
                       </h3>
                       <p className="text-slate-600 font-medium">Senin - Jumat</p>
-                      <p className="text-slate-500">08.00 - 16.00 WITA</p>
+                      <p className="text-slate-500">07.30 - 16.00 WITA</p>
                     </div>
                   </CardContent>
                 </Card>

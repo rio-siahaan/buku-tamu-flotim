@@ -78,14 +78,6 @@ export default function ServisPage() {
                       <CardDescription className="text-base leading-relaxed text-slate-600 mb-6">
                         {service.description}
                       </CardDescription>
-                      <div className="mt-auto">
-                        <Button
-                          variant="outline"
-                          className="w-full border-gray-200 hover:border-[var(--primary)] hover:text-[var(--primary)] group-hover:bg-[var(--surface)]"
-                        >
-                          Selengkapnya
-                        </Button>
-                      </div>
                     </CardContent>
                   </Card>
                 </motion.div>
