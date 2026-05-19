@@ -64,6 +64,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Revalidate dashboard cache
+    const { revalidatePath } = await import("next/cache");
+    revalidatePath("/dashboard");
+
     return NextResponse.json({
       success: true,
       queueNumber,

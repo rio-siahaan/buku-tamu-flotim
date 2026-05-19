@@ -1,6 +1,8 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import DashboardClient from "./DashboardClient";
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   // Kita gunakan Admin Client untuk mem-bypass RLS (sehingga pengunjung publik bisa melihat grafik/dashboard)
   // tanpa harus login terlebih dahulu.
