@@ -46,9 +46,6 @@ export default function Footer() {
               <li>
                 <Link href="/kontak" className="text-sm hover:text-white hover:underline transition-colors">Hubungi Kami</Link>
               </li>
-              <li>
-                <Link href="/dashboard" className="text-sm hover:text-white hover:underline transition-colors">Dashboard Tamu</Link>
-              </li>
             </ul>
           </div>
 
